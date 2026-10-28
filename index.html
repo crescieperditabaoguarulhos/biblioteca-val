@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Biblioteca Val Crochês</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: ficha de referência por vídeo — capa + botão à esquerda, análise e roteiro à direita; empilha no celular */
+:root {
+  --bg: #f5f1f3;
+  --surface: #ffffff;
+  --sunk: #efe7eb;
+  --fg: #2a1d26;
+  --muted: #6c5c67;
+  --line: #e2d6dc;
+  --accent: #a3275f;
+  --accent-ink: #ffffff;
+  --accent-soft: #f6dfe9;
+  --ok: #2f7a4f;
+  --ok-soft: #dcefe3;
+  --warn-soft: #fbecd6;
+  --warn: #8a5a10;
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "Figtree", "Helvetica Neue", system-ui, sans-serif;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161115; --surface: #201920; --sunk: #2a2129; --fg: #f3eaef; --muted: #ab99a4;
+    --line: #3a2f37; --accent: #e66aa3; --accent-ink: #1c1018; --accent-soft: #42213a;
+    --ok: #7fd3a0; --ok-soft: #1f3a2a; --warn-soft: #3d2f17; --warn: #f0c27a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161115; --surface: #201920; --sunk: #2a2129; --fg: #f3eaef; --muted: #ab99a4;
+  --line: #3a2f37; --accent: #e66aa3; --accent-ink: #1c1018; --accent-soft: #42213a;
+  --ok: #7fd3a0; --ok-soft: #1f3a2a; --warn-soft: #3d2f17; --warn: #f0c27a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ponto corrente: divisor desenhado como uma carreira de correntinhas */
+.chain {
+  height: 10px; margin: 0;
+  background:
+    radial-gradient(ellipse 7px 3.4px at 50% 50%, transparent 55%, var(--accent) 60%, var(--accent) 85%, transparent 90%) 0 0 / 16px 10px repeat-x;
+  opacity: .55;
+}
+
+header.top { padding-block: 32px 16px; display: grid; gap: 18px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+header.top h1 { font-size: clamp(34px, 6vw, 60px); font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+.lede { max-width: 64ch; color: var(--muted); font-size: 16px; margin: 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: var(--muted); }
+.facts b { color: var(--fg); font-variant-numeric: tabular-nums; }
+
+details.padroes { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 4px 20px; margin-block: 8px 24px; }
+details.padroes summary { cursor: pointer; padding-block: 14px; font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.padroes ol { margin: 0 0 18px; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px 28px; }
+.padroes li { min-width: 0; }
+.padroes li b { display: block; font-size: 15px; }
+.padroes li span { color: var(--muted); font-size: 14px; }
+
+/* barra de filtros */
+.toolbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); padding-block: 12px; border-bottom: 1px solid var(--line);
+  display: grid; gap: 10px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar input[type="search"], .toolbar select {
+  font: inherit; font-size: 14px; color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-width: 0;
+}
+.toolbar input[type="search"] { flex: 1 1 220px; }
+.chip {
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  padding: 5px 12px; border-radius: 999px;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.count { font-size: 13px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+label.toggle { font-size: 13px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+
+/* fichas */
+main { display: grid; gap: 22px; padding-block: 24px 60px; }
+article.ficha {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 0; overflow: hidden;
+  scroll-margin-top: 140px;
+}
+article.ficha.gravado { opacity: .62; }
+.side { background: var(--sunk); padding: 18px; display: grid; gap: 12px; align-content: start; }
+.capa { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 9 / 16; background: var(--line); max-width: 100%; }
+.capa img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.capa .views {
+  position: absolute; left: 8px; bottom: 8px; background: rgba(20,10,16,.78); color: #fff;
+  font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 6px; font-variant-numeric: tabular-nums;
+}
+.btn {
+  display: inline-flex; justify-content: center; align-items: center; gap: 8px;
+  font: inherit; font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 11px 14px;
+}
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 600; }
+.btn svg { width: 16px; height: 16px; flex: none; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; font-size: 12px; color: var(--muted); }
+.stats b { display: block; color: var(--fg); font-size: 15px; font-variant-numeric: tabular-nums; }
+.side label.toggle { font-size: 13px; }
+
+.body { padding: 22px 26px 26px; display: grid; gap: 20px; min-width: 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; color: var(--muted); }
+.meta .id { font-family: var(--font-display); font-weight: 800; color: var(--accent); font-size: 15px; }
+.tag { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--sunk); color: var(--fg); }
+.tag.alta { background: var(--accent-soft); color: var(--accent); }
+.tag.baixa { background: var(--warn-soft); color: var(--warn); }
+.body h2 { font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; line-height: 1.15; }
+
+.analise { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 24px; }
+.analise > div { min-width: 0; }
+.lbl { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--muted); margin: 0 0 4px; }
+.analise p { margin: 0; }
+.analise ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.analise .full { grid-column: 1 / -1; }
+
+.roteiro { border-top: 1px solid var(--line); padding-top: 18px; display: grid; gap: 14px; }
+.roteiro-head { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+.roteiro-head h3 { font-size: 18px; font-weight: 700; }
+.gancho-tela {
+  background: var(--fg); color: var(--bg); border-radius: 10px; padding: 14px 16px;
+  font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1.25;
+}
+.gancho-tela small { display: block; font-family: var(--font-body); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; opacity: .7; font-weight: 600; margin-bottom: 4px; }
+.cenas-wrap { overflow-x: auto; }
+table.cenas { width: 100%; border-collapse: collapse; font-size: 14px; }
+.cenas th { text-align: left; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); }
+.cenas td { padding: 10px 10px 10px 0; border-bottom: 1px dashed var(--line); vertical-align: top; }
+.cenas td.t { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); width: 1%; }
+.cenas .tx { display: inline-block; background: var(--accent-soft); color: var(--fg); border-radius: 6px; padding: 1px 7px; font-weight: 600; }
+.cenas .f { font-style: italic; color: var(--muted); }
+.cenas td p { margin: 0 0 4px; }
+.extra { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px 24px; }
+.extra > div { min-width: 0; }
+.extra p { margin: 0; }
+.extra .full { grid-column: 1 / -1; }
+.legenda { background: var(--sunk); border-radius: 10px; padding: 12px 14px; }
+.dica { border-left: 3px solid var(--ok); padding-left: 12px; }
+.dica .lbl { color: var(--ok); }
+
+.empty { text-align: center; color: var(--muted); padding: 40px 0; }
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; z-index: 20;
+}
+footer { color: var(--muted); font-size: 13px; padding-block: 0 40px; }
+
+@media (max-width: 720px) {
+  article.ficha { grid-template-columns: 1fr; }
+  .side { grid-template-columns: 1fr; }
+  .capa { width: min(260px, 100%); margin: 0 auto; }
+  .body { padding: 18px 16px 22px; }
+  .cenas thead { display: none; }
+  .cenas tr { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; border-bottom: 1px dashed var(--line); padding-block: 8px; }
+  .cenas td { border: 0; padding: 0; }
+  .cenas td.t { grid-row: span 2; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  article.ficha { transition: opacity .2s; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Biblioteca de conteúdo · Reels</div>
+    <h1>Val Crochês</h1>
+  </header>
+
+  <div class="toolbar" role="search">
+    <div class="row">
+      <input type="search" id="q" placeholder="Buscar tema, gancho ou peça…" aria-label="Buscar">
+      <select id="perfil" aria-label="Perfil">
+        <option value="">Todos os perfis</option>
+        <option value="J">@ateliecrochejuliana</option>
+        <option value="M">@milenacrocheteiraraiz</option>
+      </select>
+      <select id="prio" aria-label="Prioridade">
+        <option value="">Toda prioridade</option>
+        <option>Alta</option><option>Média</option><option>Baixa</option>
+      </select>
+      <select id="ordem" aria-label="Ordenar">
+        <option value="views">Mais views</option>
+        <option value="x">Mais acima da mediana</option>
+        <option value="coments">Mais comentários</option>
+        <option value="data">Mais recentes</option>
+      </select>
+    </div>
+    <div class="row" id="grupos"></div>
+    <div class="row">
+      <label class="toggle"><input type="checkbox" id="escondeGravados"> Esconder os já gravados</label>
+      <span class="count" id="count"></span>
+    </div>
+  </div>
+
+  <main id="lista" aria-live="polite"></main>
+
+  <footer>
+    Fonte: grade de Reels de @ateliecrochejuliana e @milenacrocheteiraraiz, de 29/07 a 27/10/2026, coletada em 27/10/2026. Views da grade; curtidas e comentários do dia da coleta. "× mediana" compara com a mediana do próprio perfil. Campos entre [colchetes] são para preencher com a peça, o valor ou o nome real. A marcação "gravado" fica salva só neste navegador.
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  const D = window.CONTEUDOS, P = window.PERFIS;
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace(".", ",").replace(",0", "") + " mi"
+                  : n >= 1e3 ? Math.round(n / 1e3) + " mil" : String(n);
+  const fmtData = (d) => d.split("-").reverse().join("/");
+  const KEY = "val-biblioteca-gravados";
+  let gravados = {};
+  try { gravados = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+  const salvar = () => { try { localStorage.setItem(KEY, JSON.stringify(gravados)); } catch (e) {} };
+
+  const ordemGrupos = ["Peça no corpo", "Processo & técnica", "Achado viral", "Customização", "Vitrine", "Transformação", "Educativo", "Conexão & humor", "Collab"];
+  let grupo = "";
+
+  const gEl = $("#grupos");
+  ["", ...ordemGrupos].forEach(g => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.type = "button";
+    const n = g ? D.filter(d => d.grupo === g).length : D.length;
+    b.textContent = (g || "Todos os formatos") + " · " + n;
+    b.setAttribute("aria-pressed", String(g === grupo));
+    b.addEventListener("click", () => { grupo = g; gEl.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", "true"); render(); });
+    gEl.appendChild(b);
+  });
+
+  const icoPlay = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
+  const icoCopy = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+
+  function roteiroTexto(d) {
+    const linhas = [
+      `${d.id} · ${d.titulo}`,
+      `Gancho (texto na tela): ${d.ganchoVal}`,
+      "",
+      ...d.cenas.map(c => `${c.t} | ${c.v}${c.tx ? `\n   Texto na tela: ${c.tx}` : ""}${c.f ? `\n   Fala: ${c.f}` : ""}`),
+      "",
+      `Referência: https://www.instagram.com/reel/${d.code}/`
+    ];
+    return linhas.join("\n");
+  }
+
+  function card(d) {
+    const p = P[d.id[0]];
+    const url = `https://www.instagram.com/reel/${d.code}/`;
+    const feito = !!gravados[d.id];
+    const prioCls = d.prioridade === "Alta" ? "alta" : d.prioridade === "Baixa" ? "baixa" : "";
+    return `
+<article class="ficha${feito ? " gravado" : ""}" id="${d.id}">
+  <div class="side">
+    <div class="capa">
+      <img src="capas/${d.id}.jpg" alt="Capa do Reel ${d.id} de ${esc(p.user)}: ${esc(d.formato)}" loading="lazy">
+      <span class="views">${fmt(d.views)} views</span>
+    </div>
+    <a class="btn" href="${url}" target="_blank" rel="noopener">${icoPlay} Ver vídeo completo</a>
+    <div class="stats">
+      <div><b>${d.x.toFixed(1).replace(".", ",")}×</b> a mediana</div>
+      <div><b>${fmt(d.likes)}</b> curtidas</div>
+      <div><b>${fmt(d.coments)}</b> comentários</div>
+      <div><b>${fmtData(d.data)}</b> postado</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="gravado-${d.id}" data-id="${d.id}" ${feito ? "checked" : ""}> Já gravamos</label>
+  </div>
+  <div class="body">
+    <div class="meta">
+      <span class="id">${d.id}</span>
+      <span>${esc(p.user)}</span>
+      <span class="tag">${esc(d.grupo)}</span>
+      <span class="tag ${prioCls}">Prioridade ${esc(d.prioridade)}</span>
+    </div>
+    <h2>${esc(d.titulo)}</h2>
+
+    <div class="analise">
+      <div class="full"><p class="lbl">Tema do vídeo original</p><p>${esc(d.tema)}</p></div>
+      <div class="full"><p class="lbl">Por que funcionou</p><ul>${d.porque.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    </div>
+
+    <section class="roteiro">
+      <div class="roteiro-head">
+        <h3>Roteiro adaptado para a Val</h3>
+        <button class="btn ghost" type="button" data-copy="${d.id}">${icoCopy} Copiar roteiro</button>
+      </div>
+      <div class="gancho-tela"><small>Gancho · texto na tela</small>${esc(d.ganchoVal)}</div>
+      <div class="cenas-wrap">
+        <table class="cenas">
+          <thead><tr><th>Tempo</th><th>O que gravar · texto · fala</th></tr></thead>
+          <tbody>${d.cenas.map(c => `<tr><td class="t">${esc(c.t)}</td><td><p>${esc(c.v)}</p>${c.tx ? `<p><span class="tx">${esc(c.tx)}</span></p>` : ""}${c.f ? `<p class="f">"${esc(c.f)}"</p>` : ""}</td></tr>`).join("")}</tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</article>`;
+  }
+
+  function render() {
+    const q = $("#q").value.trim().toLowerCase();
+    const perfil = $("#perfil").value, prio = $("#prio").value, ordem = $("#ordem").value;
+    const esconde = $("#escondeGravados").checked;
+    let L = D.filter(d =>
+      (!perfil || d.id[0] === perfil) &&
+      (!prio || d.prioridade === prio) &&
+      (!grupo || d.grupo === grupo) &&
+      (!esconde || !gravados[d.id]) &&
+      (!q || [d.id, d.tema, d.gancho, d.titulo, d.ganchoVal, d.formato, d.grupo, d.legenda].join(" ").toLowerCase().includes(q))
+    );
+    L.sort((a, b) => ordem === "data" ? b.data.localeCompare(a.data) : b[ordem] - a[ordem]);
+    const feitos = D.filter(d => gravados[d.id]).length;
+    $("#count").textContent = `${L.length} de ${D.length} · ${feitos} gravado${feitos === 1 ? "" : "s"}`;
+    $("#lista").innerHTML = L.length ? L.map(card).join("") : `<p class="empty">Nenhum vídeo com esses filtros. Limpe a busca ou escolha "Todos os formatos".</p>`;
+  }
+
+  function toast(msg) {
+    const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+    document.body.appendChild(t); setTimeout(() => t.remove(), 1800);
+  }
+
+  $("#lista").addEventListener("change", (e) => {
+    const id = e.target.dataset && e.target.dataset.id; if (!id) return;
+    if (e.target.checked) gravados[id] = true; else delete gravados[id];
+    salvar(); render();
+  });
+  $("#lista").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-copy]"); if (!b) return;
+    const d = D.find(x => x.id === b.dataset.copy);
+    const txt = roteiroTexto(d);
+    const fallback = () => {
+      const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast("Roteiro copiado"); } catch (err) { toast("Selecione e copie o texto manualmente"); }
+      ta.remove();
+    };
+    try { navigator.clipboard.writeText(txt).then(() => toast("Roteiro copiado"), fallback); } catch (err) { fallback(); }
+  });
+  ["#q", "#perfil", "#prio", "#ordem", "#escondeGravados"].forEach(s => $(s).addEventListener("input", render));
+
+  render();
+  const h = location.hash.slice(1);
+  if (h && document.getElementById(h)) document.getElementById(h).scrollIntoView();
+})();
+</script>
+</body>
+</html>
